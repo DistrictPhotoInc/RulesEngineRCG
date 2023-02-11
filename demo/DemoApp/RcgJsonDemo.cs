@@ -111,7 +111,7 @@ namespace DemoApp
       List<RuleResultTree> resultList;
       string location = "";
 
-      (location, resultList) = NewMethod(input1, input2, bre);
+      (location, resultList) = ProcessBRE(input1, input2, input3, bre);
 
       Console.WriteLine(location);
       PrintExceptions(resultList);
@@ -120,7 +120,7 @@ namespace DemoApp
       // change state to NY
 
       input1.ShipToState = "NY";
-      (location, resultList) = NewMethod(input1, input2, bre);
+      (location, resultList) = ProcessBRE(input1, input2, input3, bre);
 
       Console.WriteLine(location);
       PrintExceptions(resultList);
@@ -128,7 +128,7 @@ namespace DemoApp
       // change state to MD
 
       input1.ShipToState = "MD";
-      (location, resultList) = NewMethod(input1, input2, bre);
+      (location, resultList) = ProcessBRE(input1, input2, input3, bre);
 
       Console.WriteLine(location);
       PrintExceptions(resultList);
@@ -136,7 +136,7 @@ namespace DemoApp
       // change state to LA
 
       input1.ShipToState = "LA";
-      (location, resultList) = NewMethod(input1, input2, bre);
+      (location, resultList) = ProcessBRE(input1, input2, input3, bre);
 
       Console.WriteLine(location);
       PrintExceptions(resultList);
@@ -189,16 +189,20 @@ namespace DemoApp
       return messages;
     }
 
-    private static (string, List<RuleResultTree>) NewMethod(OrderRoutingInput orderRoutingInput, OrderRoutingHelper orderRoutingHelper, RulesEngine.RulesEngine bre)
+    private static (string, List<RuleResultTree>) ProcessBRE(OrderRoutingInput orderRoutingInput
+    , OrderRoutingHelper orderRoutingHelper
+    , dynamic dyno
+    , RulesEngine.RulesEngine bre)
     {
       List<RuleResultTree> resultList = new List<RuleResultTree>();
       string location = "No Routing was found";
 
       var rp1 = new RuleParameter("order", orderRoutingInput);
       var rp2 = new RuleParameter("routing", orderRoutingHelper);
+      var rp3 = new RuleParameter("dyno", dyno);
       // rp3= orderRoutingDynamic
 
-      resultList = bre.ExecuteAllRulesAsync(orderRoutingInput.ProductGroupName, rp1, rp2).Result;
+      resultList = bre.ExecuteAllRulesAsync(orderRoutingInput.ProductGroupName, rp1, rp2, rp3).Result;
       resultList.OnSuccess((eventName) => {
         location = $"{orderRoutingInput.ShipToState} Order routed to {eventName}.  {orderRoutingInput.RandomNumber}";
       });
