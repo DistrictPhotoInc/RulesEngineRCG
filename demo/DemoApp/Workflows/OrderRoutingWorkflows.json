@@ -1,0 +1,87 @@
+[
+  {
+    "WorkflowName": "Mugs:CeramicWhite:11oz",
+    "GlobalParams": [
+      {
+        "Name": "canSendToCHB",
+        "Expression": "order.ActiveLocations.Contains(\"CHB\")"
+      },
+      {
+        "Name": "canSendToLVL",
+        "Expression": "order.ActiveLocations.Contains(\"LVL\")"
+      },
+      {
+        "Name": "canSendToPHX",
+        "Expression": "order.ActiveLocations.Contains(\"PHX\")"
+      },
+      {
+        "Name": "canSendToBVL",
+        "Expression": "order.ActiveLocations.Contains(\"BVL\")"
+      },
+      {
+        "Name": "canSendToUK",
+        "Expression": "order.ActiveLocations.Contains(\"UK\")"
+      }
+    ],
+    "Rules": [
+      {
+        "RuleName": "SendToPHXUsingPHXStates",
+        "SuccessEvent": "PHX",
+        "Expression": "canSendToPHX AND routing.phxStates.Contains(order.ShipToState) AND REUtils.IntegerInCSVList(order.BrandId, \"126,177,318,353,66\")"
+      },
+      {
+        "RuleName": "SendSnapfishToPHXUsingSwingStates",
+        "SuccessEvent": "PHX",
+        "Expression": "canSendToPHX AND REUtils.StringInCSVList(order.ShipToState, \"LA, MO, IL\") AND order.BrandId = \"66\""
+      },
+      {
+        "RuleName": "SendToLVL",
+        "SuccessEvent": "LVL",
+        "Expression": "canSendToLVL AND order.RandomNumber >= 01 AND order.RandomNumber <= 50"
+      },
+      {
+        "RuleName": "DefaultCHB",
+        "SuccessEvent": "{\"Location\" : \"CHB\"}",
+        "Expression": "canSendToCHB",
+        "Actions": {
+          "OnSuccess": {
+            "Name": "OutputExpression",
+            "Context": {
+              "Expression": "order.ShipToState"
+            }
+          }
+        }
+      },
+      {
+        "RuleName": "Send1146ToCHB",
+        "SuccessEvent": "CHB",
+        "Expression": "canSendToCHB AND order.ProductCodes.Contains(\"1146\")"
+      },
+      {
+        "RuleName": "ForceListOfProductsToCHBInline",
+        "SuccessEvent": "CHB",
+        "Expression": "canSendToCHB AND order.ProductCodes.Intersect(dynamic.ProductsToForceToCHB).Any()"
+      },
+      {
+        "RuleName": "ForceListOfProductsToCHBInlineAll",
+        "SuccessEvent": "CHB",
+        "Expression": "canSendToCHB AND (dynamic.ProductsToForceToCHB.Count() == order.ProductCodes.Intersect(dynamic.ProductsToForceToCHB).Count())"
+      },
+      {
+        "RuleName": "ForceListOfAllProductsToCHB",
+        "SuccessEvent": "CHB",
+        "Expression": "canSendToCHB AND REUtils.ListContainsAll(order.ProductCodes, dynamic.ProductsToForceToCHB)"
+      },
+      {
+        "RuleName": "ForceListOfProductsToCHB",
+        "SuccessEvent": "CHB",
+        "Expression": "canSendToCHB AND REUtils.ListsIntersectAnyValue(order.ProductCodes, dynamic.ProductsToForceToCHB)"
+      },
+      {
+        "RuleName": "ForceListOfProductsToCHB2",
+        "SuccessEvent": "CHB",
+        "Expression": "canSendToCHB AND REUtils.AllList2ValuesIntersect(order.ProductCodes, \"5050,1246\")"
+      }
+    ]
+  }
+]
