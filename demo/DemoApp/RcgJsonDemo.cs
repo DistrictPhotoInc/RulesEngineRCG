@@ -76,23 +76,15 @@ namespace DemoApp
       if (files3 == null || files3.Length == 0)
         throw new Exception("OrderRoutingDynamic.json not found.");
 
-      JObject jsonFileData3 = JObject.Parse(File.ReadAllText(files3[0]));
+      JObject jObject = JObject.Parse(File.ReadAllText(files3[0]));
 
-      foreach (KeyValuePair<string, JToken> kvp in jsonFileData3)
+      foreach (KeyValuePair<string, JToken> kvp in jObject)
       {
         Console.WriteLine(kvp.Key + " " + kvp.Value);
       }
 
-      var converter = new ExpandoObjectConverter();
-
-      dynamic input3 = JsonConvert.DeserializeObject<ExpandoObject>(jsonFileData3.ToString(), converter);
       #endregion
 
-      bool boolvalue = input3.ProductsToForceToCHB.Contains("1146");
-      Console.WriteLine($"input3.ProductsToForceToCHB.Contains(\"1146\") {boolvalue}");
-
-      //      boolvalue = input1.ProductCodes.Intersect(input3.ProductsToForceToCHB).Any();
-      Console.WriteLine($" {boolvalue}");
 
       Console.WriteLine($"Running {nameof(RcgJsonDemo)}....");
 
@@ -111,7 +103,7 @@ namespace DemoApp
       List<RuleResultTree> resultList;
       string location = "";
 
-      (location, resultList) = ProcessBRE(input1, input2, input3, bre);
+      (location, resultList) = ProcessBRE(input1, input2, jObject, bre);
 
       Console.WriteLine(location);
       PrintExceptions(resultList);
@@ -120,7 +112,7 @@ namespace DemoApp
       // change state to NY
 
       input1.ShipToState = "NY";
-      (location, resultList) = ProcessBRE(input1, input2, input3, bre);
+      (location, resultList) = ProcessBRE(input1, input2, jObject, bre);
 
       Console.WriteLine(location);
       PrintExceptions(resultList);
@@ -128,7 +120,7 @@ namespace DemoApp
       // change state to MD
 
       input1.ShipToState = "MD";
-      (location, resultList) = ProcessBRE(input1, input2, input3, bre);
+      (location, resultList) = ProcessBRE(input1, input2, jObject, bre);
 
       Console.WriteLine(location);
       PrintExceptions(resultList);
@@ -136,7 +128,7 @@ namespace DemoApp
       // change state to LA
 
       input1.ShipToState = "LA";
-      (location, resultList) = ProcessBRE(input1, input2, input3, bre);
+      (location, resultList) = ProcessBRE(input1, input2, jObject, bre);
 
       Console.WriteLine(location);
       PrintExceptions(resultList);
@@ -189,18 +181,25 @@ namespace DemoApp
       return messages;
     }
 
-    private static (string, List<RuleResultTree>) ProcessBRE(OrderRoutingInput orderRoutingInput
+    private static (string, List<RuleResultTree>) ProcessBRE(
+      OrderRoutingInput orderRoutingInput
     , OrderRoutingHelper orderRoutingHelper
-    , dynamic dyno
+    , JObject jObject
     , RulesEngine.RulesEngine bre)
     {
+      var converter = new ExpandoObjectConverter();
+
+      dynamic input3 = JsonConvert.DeserializeObject<ExpandoObject>(jObject.ToString(), converter);
+      bool boolvalue = input3.ProductsToForceToCHB.Contains("1146");
+
+      Console.WriteLine($"input3.ProductsToForceToCHB.Contains(\"1146\") {boolvalue}");
+
       List<RuleResultTree> resultList = new List<RuleResultTree>();
       string location = "No Routing was found";
 
       var rp1 = new RuleParameter("order", orderRoutingInput);
       var rp2 = new RuleParameter("routing", orderRoutingHelper);
-      var rp3 = new RuleParameter("dyno", dyno);
-      // rp3= orderRoutingDynamic
+      var rp3 = new RuleParameter("dynamic", input3);
 
       resultList = bre.ExecuteAllRulesAsync(orderRoutingInput.ProductGroupName, rp1, rp2, rp3).Result;
       resultList.OnSuccess((eventName) => {
