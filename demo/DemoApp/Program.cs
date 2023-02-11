@@ -3,14 +3,11 @@
 
 namespace DemoApp
 {
-    public static class Program
+  public static class Program
+  {
+    public static void Main(string[] args)
     {
-        public static void Main(string[] args)
-        {
-            new BasicDemo().Run();
-            new JSONDemo().Run();
-            new NestedInputDemo().Run();
-            new EFDemo().Run();
-        }
+      new RcgJsonDemo().Run();
     }
+  }
 }

@@ -1,0 +1,10 @@
+{
+  "ProductsToForceToCHB": [
+    "1146",
+    "1147",
+    "1148"
+  ],
+  "ProductsToForceToLVL": [
+    "5050"
+  ]
+}
