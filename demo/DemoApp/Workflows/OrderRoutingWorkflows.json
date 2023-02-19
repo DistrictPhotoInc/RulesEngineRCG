@@ -35,9 +35,15 @@
         "Expression": "canSendToPHX AND REUtils.StringInCSVList(order.ShipToState, \"LA, MO, IL\") AND order.BrandId = \"66\""
       },
       {
-        "RuleName": "SendToLVL",
+        "RuleName": "SendToLVL1_50",
         "SuccessEvent": "LVL",
         "Expression": "canSendToLVL AND order.RandomNumber >= 01 AND order.RandomNumber <= 50"
+      },
+      {
+        "RuleName": "SendToLVL51_100",
+        "Enabled" : false,
+        "SuccessEvent": "LVL",
+        "Expression": "canSendToLVL AND order.RandomNumber >= 51 AND order.RandomNumber <= 100"
       },
       {
         "RuleName": "DefaultCHB",
@@ -58,29 +64,29 @@
         "Expression": "canSendToCHB AND order.ProductCodes.Contains(\"1146\")"
       },
       {
-        "RuleName": "ForceListOfProductsToCHBInline",
+        "RuleName": "Send1146ToCHBUsingCSV",
+        "SuccessEvent": "CHB",
+        "Expression": "canSendToCHB AND REUtils.ListsIntersectAnyValue(order.ProductCodes, \"1146,1147\")"
+      },
+      {
+        "RuleName": "ForceListOfProductsToCHBInlineAny",
         "SuccessEvent": "CHB",
         "Expression": "canSendToCHB AND order.ProductCodes.Intersect(dynamic.ProductsToForceToCHB).Any()"
       },
       {
         "RuleName": "ForceListOfProductsToCHBInlineAll",
         "SuccessEvent": "CHB",
-        "Expression": "canSendToCHB AND (dynamic.ProductsToForceToCHB.Count() == order.ProductCodes.Intersect(dynamic.ProductsToForceToCHB).Count())"
+        "Expression": "canSendToCHB AND (dynamic.ProductsToForceToCHB.Count() == order.ProductCodes.Intersect(routing.ProductsToForceToCHB).Count())"
       },
       {
-        "RuleName": "ForceListOfAllProductsToCHB",
+        "RuleName": "ForceListOfAllDynamicProductsToCHB",
         "SuccessEvent": "CHB",
-        "Expression": "canSendToCHB AND REUtils.ListContainsAll(order.ProductCodes, dynamic.ProductsToForceToCHB)"
+        "Expression": "canSendToCHB AND REUtils.AllList2ValuesIntersect(order.ProductCodes, dynamic.ProductsToForceToCHB)"
       },
       {
         "RuleName": "ForceListOfProductsToCHB",
         "SuccessEvent": "CHB",
         "Expression": "canSendToCHB AND REUtils.ListsIntersectAnyValue(order.ProductCodes, dynamic.ProductsToForceToCHB)"
-      },
-      {
-        "RuleName": "ForceListOfProductsToCHB2",
-        "SuccessEvent": "CHB",
-        "Expression": "canSendToCHB AND REUtils.AllList2ValuesIntersect(order.ProductCodes, \"5050,1246\")"
       }
     ]
   }
