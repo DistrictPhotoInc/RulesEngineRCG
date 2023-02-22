@@ -21,7 +21,12 @@
       {
         "Name": "canSendToUK",
         "Expression": "order.ActiveLocations.Contains(\"UK\")"
+      },
+      {
+        "Name": "phxBrands",
+        "Expression": "dynamic.PhxBrands.Contains(order.BrandId)"
       }
+
     ],
     "Rules": [
       {
@@ -47,6 +52,11 @@
       },
       {
         "RuleName": "DefaultCHB",
+        "SuccessEvent": "CHB",
+        "Expression": "canSendToCHB"
+      },
+      {
+        "RuleName": "DefaultCHBWithAction",
         "SuccessEvent": "{\"Location\" : \"CHB\"}",
         "Expression": "canSendToCHB",
         "Actions": {
@@ -69,14 +79,14 @@
         "Expression": "canSendToCHB AND REUtils.ListsIntersectAnyValue(order.ProductCodes, \"1146,1147\")"
       },
       {
-        "RuleName": "ForceListOfProductsToCHBInlineAny",
+        "RuleName": "ForceListOfProductsRyanListAny",
         "SuccessEvent": "CHB",
-        "Expression": "canSendToCHB AND order.ProductCodes.Intersect(dynamic.ProductsToForceToCHB).Any()"
+        "Expression": "canSendToCHB AND order.ProductCodes.Intersect(dynamic.RyanList).Any()"
       },
       {
         "RuleName": "ForceListOfProductsToCHBInlineAll",
         "SuccessEvent": "CHB",
-        "Expression": "canSendToCHB AND (dynamic.ProductsToForceToCHB.Count() == order.ProductCodes.Intersect(routing.ProductsToForceToCHB).Count())"
+        "Expression": "canSendToCHB AND (dynamic.ProductsToForceToCHB.Count() == order.ProductCodes.Intersect(dynamic.ProductsToForceToCHB).Count())"
       },
       {
         "RuleName": "ForceListOfAllDynamicProductsToCHB",

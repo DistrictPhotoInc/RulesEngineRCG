@@ -48,8 +48,6 @@ namespace OrderRoutingWorkflow
     public List<string> EUCountries { get; set; }
     public List<string> PHXStates { get; set; }
     public List<ActiveProductType> ActiveProducts { get; set; }
-
-    public List<string> ProductsToForceToCHB { get; set; }
     public static string ToJson(OrderRoutingHelper orderRoutingHelper)
     {
       string output = JsonConvert.SerializeObject(orderRoutingHelper);
