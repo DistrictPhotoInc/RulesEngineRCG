@@ -23,11 +23,6 @@ namespace OrderRoutingWorkflow
     public int ProductGroupId { get; set; }
     public List<ProductGroupLocationVolume> LocationVolumes { get; set; }
   }
-  public record struct ActiveProductType
-  {
-    public string ProductCode { get; set; }
-    public string LocationName { get; set; }
-  }
 
   public record class OrderRoutingHelper
   {
@@ -47,7 +42,11 @@ namespace OrderRoutingWorkflow
     public List<string> USTerritories { get; set; }
     public List<string> EUCountries { get; set; }
     public List<string> PHXStates { get; set; }
-    public List<ActiveProductType> ActiveProducts { get; set; }
+    public List<string> ActiveProductsBVL { get; set; }
+    public List<string> ActiveProductsCHB { get; set; }
+    public List<string> ActiveProductsLVL { get; set; }
+    public List<string> ActiveProductsPHX { get; set; }
+    public List<string> ActiveProductsUK { get; set; }
     public static string ToJson(OrderRoutingHelper orderRoutingHelper)
     {
       string output = JsonConvert.SerializeObject(orderRoutingHelper);

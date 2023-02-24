@@ -22,6 +22,15 @@ namespace RE.HelperFunctions
       var list = csvList.Split(',').ToList();
       return list.Contains(check.ToString());
     }
+    public static bool IntegerInList(int check, List<string> list)
+    {
+      return list.Contains(check.ToString());
+    }
+
+    public static bool IntegerInList(int check, List<int> list)
+    {
+      return list.Contains(check);
+    }
     public static bool ListsIntersectAnyValue(List<string> list1, List<string> list2)
     {
       if (list1.Count == 0 || list2.Count == 0) return false;

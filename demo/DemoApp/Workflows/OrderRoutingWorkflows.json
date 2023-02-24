@@ -3,27 +3,31 @@
     "WorkflowName": "Mugs:CeramicWhite:11oz",
     "GlobalParams": [
       {
+        "Name": "canSendToBVL",
+        "Expression": "REUtils.AllList2ValuesIntersect(routing.ActiveProductsBVL, order.ProductCodes)"
+      },
+      {
         "Name": "canSendToCHB",
-        "Expression": "order.ActiveLocations.Contains(\"CHB\")"
+        "Expression": "REUtils.AllList2ValuesIntersect(routing.ActiveProductsCHB, order.ProductCodes)"
       },
       {
         "Name": "canSendToLVL",
-        "Expression": "order.ActiveLocations.Contains(\"LVL\")"
+        "Expression": "REUtils.AllList2ValuesIntersect(routing.ActiveProductsLVL, order.ProductCodes)"
       },
       {
         "Name": "canSendToPHX",
-        "Expression": "order.ActiveLocations.Contains(\"PHX\")"
-      },
-      {
-        "Name": "canSendToBVL",
-        "Expression": "order.ActiveLocations.Contains(\"BVL\")"
+        "Expression": "REUtils.AllList2ValuesIntersect(routing.ActiveProductsPHX, order.ProductCodes)"
       },
       {
         "Name": "canSendToUK",
-        "Expression": "order.ActiveLocations.Contains(\"UK\")"
+        "Expression": "REUtils.AllList2ValuesIntersect(routing.ActiveProductsUK, order.ProductCodes)"
       },
       {
         "Name": "phxBrands",
+        "Expression": "dynamic.PhxBrands.Contains(order.BrandId.ToString())"
+      },
+      {
+        "Name": "phxBrandsInt",
         "Expression": "dynamic.PhxBrands.Contains(order.BrandId)"
       }
 
