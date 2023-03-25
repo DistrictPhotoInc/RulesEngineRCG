@@ -7,7 +7,8 @@ namespace DemoApp
   {
     public static void Main(string[] args)
     {
-      new RcgJsonDemo().Run();
+      new OrderPackagingDemo().Run();
+      //new RcgJsonDemo().Run();
     }
   }
 }
