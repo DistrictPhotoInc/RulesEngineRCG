@@ -1,0 +1,25 @@
+    {
+      "ProductGroupId": 436,
+      "ProductGroupName": "Mugs:CeramicWhite:11oz",
+      "BrandId": "66",
+      "BrandName": "SNAPFISH",
+      "PartnerId": "32",
+      "PartnerName": "Snapfish",
+      "PSGMasterId": 0,
+      "PSGName": "None",
+      "VendorFacility": "BVL",
+      "ShipMethod": "SG",
+      "ShipToCountryCode": "US",
+      "ShipToState": "AZ",
+      "DateCreated": "2023-02-05T19:24:25.7462749-05:00",
+      "RandomNumber": 60,
+      "PriorityCode": "L",
+      "ProductCodes": [
+        "1122",
+        "5050"
+      ],
+      "TotalQty": 100,
+      "Total4InchPrintQty": 100,
+      "Total5InchPrintQty": 0,
+      "Total8InchPrintQty": 0
+    }
