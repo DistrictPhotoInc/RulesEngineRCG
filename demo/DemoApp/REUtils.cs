@@ -6,6 +6,36 @@ namespace RE.HelperFunctions
 {
   public static class REUtils
   {
+    public static bool In(string check, string csvList)
+    {
+      if (String.IsNullOrEmpty(check) || String.IsNullOrEmpty(csvList))
+        return false;
+
+      var list = csvList.Split(',').ToList();
+      return list.Contains(check);
+    }
+    public static bool In(int check, string csvList)
+    {
+      if (String.IsNullOrEmpty(csvList))
+        return false;
+
+      var list = csvList.Split(',').ToList();
+      return list.Contains(check.ToString());
+    }
+    public static bool In(int check, List<string> list)
+    {
+      return list.Contains(check.ToString());
+    }
+
+    public static bool In(int check, List<int> list)
+    {
+      return list.Contains(check);
+    }
+    public static bool In(string check, List<string> list)
+    {
+      return list.Contains(check);
+    }
+
     public static bool StringInCSVList(string check, string csvList)
     {
       if (String.IsNullOrEmpty(check) || String.IsNullOrEmpty(csvList))

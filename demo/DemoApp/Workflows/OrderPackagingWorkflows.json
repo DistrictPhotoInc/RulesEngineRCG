@@ -1,6 +1,6 @@
 [
   {
-    "WorkflowName": "ADRS:4-8 Prints:4x5x8x",
+    "WorkflowName": "Inner:ADRS:4-8Prints:4x5x8x",
     "GlobalParams": [
       {
         "Name": "hasGiftBoxProduct",
@@ -9,14 +9,57 @@
     ],
     "Rules": [
       {
+        "RuleName": "Add4x6PrintSlate",
+        "SuccessEvent": "4x6PrintSlate",
+        "Expression": "true"
+      },
+      {
         "RuleName": "CheckGiftBox",
         "SuccessEvent": "ADRS Gift Box",
         "Expression": "hasGiftBoxProduct"
+      },
+      {
+        "RuleName": "checkLargeWallets",
+        "SuccessEvent": "5inch Wallet",
+        "Expression": "(order.Qty4InchPrints+order.Qty5InchPrints) > 0",
+        "Actions": {
+          "OnSuccess": {
+            "Name": "OutputExpression",
+            "Context": {
+              "Expression": "(order.Qty4InchPrints+order.Qty5InchPrints) / 65"
+            }
+          }
+        }
+      },
+      {
+        "RuleName": "check8x12Chipboard",
+        "SuccessEvent": "8x12Chipboard",
+        "Expression": "hasGiftBoxProduct==false and order.Qty8InchPrints <= 5 and (order.Qty4InchPrints+order.Qty5InchPrints) < 50",
+        "Actions": {
+          "OnSuccess": {
+            "Name": "OutputExpression",
+            "Context": {
+              "Expression": "1"
+            },
+            "OnFailure": {
+              "Name": "EvaluateRule",
+              "Context": {
+                "WorkflowName": "Inner:ADRS:4-8Prints:4x5x8x",
+                "ruleName": "check5x7Chipboard"
+              }
+            }
+          }
+        }
+      },
+      {
+        "RuleName": "check5x7Chipboard",
+        "SuccessEvent": "5x7Chipboard",
+        "Expression": "hasGiftBoxProduct==false and order.Qty8InchPrints == 0 and (order.Qty4InchPrints+order.Qty5InchPrints) <= 5",
       }
     ]
   },
   {
-    "WorkflowName": "ADRS:4-8 Prints:4x5x",
+    "WorkflowName": "Inner:ADRS:4-8Prints:4x5x",
     "GlobalParams": [
       {
         "Name": "hasGiftBoxProduct",
@@ -25,14 +68,102 @@
     ],
     "Rules": [
       {
+        "RuleName": "Add4x6PrintSlate",
+        "SuccessEvent": "4x6PrintSlate",
+        "Expression": "true"
+      },
+      {
         "RuleName": "CheckGiftBox",
         "SuccessEvent": "ADRS Gift Box",
         "Expression": "hasGiftBoxProduct"
+      },
+      {
+        "RuleName": "checkLargeWallets",
+        "SuccessEvent": "5inch Wallet",
+        "Expression": "hasSmallWallets == false",
+        "Actions": {
+          "OnSuccess": {
+            "Name": "OutputExpression",
+            "Context": {
+              "Expression": "(order.Qty4InchPrints+order.Qty5InchPrints) / 65"
+            }
+          }
+        }
+      },
+      {
+        "RuleName": "check5x7Chipboard",
+        "SuccessEvent": "5x7Chipboard",
+        "Expression": "hasGiftBoxProduct==false and order.Qty8InchPrints == 0 and (order.Qty4InchPrints+order.Qty5InchPrints) <= 5",
       }
     ]
   },
   {
-    "WorkflowName": "ADRS:4-8 Prints:4x",
+    "WorkflowName": "Inner:ADRS:4-8Prints:4x",
+    "GlobalParams": [
+      {
+        "Name": "hasGiftBoxProduct",
+        "Expression": "REUtils.ListsIntersectAnyValue(packaging.PrintGiftBoxCodes, order.ProductCodes)"
+      },
+      {
+        "Name": "hasSmallWallets",
+        "Expression": "REUtils.In(order.BrandId,dynamic.IgnoreSmallWalletBrands) == false
+         AND (order.Qty4InchPrints > 65 AND order.Qty4InchPrints <= 130) 
+         AND (order.Qty5InchPrints + order.Qty8InchPrints) == 0"
+      }
+    ],
+    "Rules": [
+      {
+        "RuleName": "Add4x6PrintSlate",
+        "SuccessEvent": "4x6PrintSlate",
+        "Expression": "true"
+      },
+      {
+        "RuleName": "CheckGiftBox",
+        "SuccessEvent": "ADRS Gift Box",
+        "Expression": "hasGiftBoxProduct"
+      },
+      {
+        "RuleName": "checkSmallWallets",
+        "SuccessEvent": "4inch Wallet",
+        "Expression": "hasSmallWallets and hasGiftBoxProduct==false",
+        "Actions": {
+          "OnSuccess": {
+            "Name": "OutputExpression",
+            "Context": {
+              "Expression": "(order.Qty4InchPrints) / 65"
+            },
+            "OnFailure": {
+              "Name": "EvaluateRule",
+              "Context": {
+                "WorkflowName": "Inner:ADRS:4-8Prints:4x",
+                "ruleName": "checkLargeWallets"
+              }
+            }
+          }
+        }
+      },
+      {
+        "RuleName": "checkLargeWallets",
+        "SuccessEvent": "5inch Wallet",
+        "Expression": "hasSmallWallets == false",
+        "Actions": {
+          "OnSuccess": {
+            "Name": "OutputExpression",
+            "Context": {
+              "Expression": "(order.Qty4InchPrints) / 65"
+            }
+          }
+        }
+      },
+      {
+        "RuleName": "check5x7Chipboard",
+        "SuccessEvent": "5x7Chipboard",
+        "Expression": "hasGiftBoxProduct==false and order.Qty8InchPrints == 0 and (order.Qty4InchPrints+order.Qty5InchPrints) <= 5",
+      }
+    ]
+  },
+  {
+    "WorkflowName": "Inner:ADRS:4-8Prints:5x",
     "GlobalParams": [
       {
         "Name": "hasGiftBoxProduct",
@@ -41,9 +172,166 @@
     ],
     "Rules": [
       {
+        "RuleName": "Add5x7PrintSlate",
+        "SuccessEvent": "5x7PrintSlate",
+        "Expression": "true"
+      },
+      {
         "RuleName": "CheckGiftBox",
         "SuccessEvent": "ADRS Gift Box",
         "Expression": "hasGiftBoxProduct"
+      },
+      {
+        "RuleName": "checkLargeWallets",
+        "SuccessEvent": "5inch Wallet",
+        "Expression": "order.Qty5InchPrints > 0",
+        "Actions": {
+          "OnSuccess": {
+            "Name": "OutputExpression",
+            "Context": {
+              "Expression": "(order.Qty5InchPrints) / 65"
+            }
+          }
+        }
+      },
+      {
+        "RuleName": "check5x7Chipboard",
+        "SuccessEvent": "5x7Chipboard",
+        "Expression": "hasGiftBoxProduct==false and order.Qty8InchPrints == 0 and (order.Qty4InchPrints+order.Qty5InchPrints) <= 5",
+      }
+    ]
+  },
+  {
+    "WorkflowName": "Inner:ADRS:4-8Prints:8x",
+    "GlobalParams": [
+      {
+        "Name": "hasGiftBoxProduct",
+        "Expression": "REUtils.ListsIntersectAnyValue(packaging.PrintGiftBoxCodes, order.ProductCodes)"
+      }
+    ],
+    "Rules": [
+      {
+        "RuleName": "Add4x8PrintSlate",
+        "SuccessEvent": "4x8PrintSlate",
+        "Expression": "true"
+      },
+      {
+        "RuleName": "CheckGiftBox",
+        "SuccessEvent": "ADRS Gift Box",
+        "Expression": "hasGiftBoxProduct"
+      },
+      {
+        "RuleName": "check8x12Chipboard",
+        "SuccessEvent": "8x12Chipboard",
+        "Expression": "hasGiftBoxProduct==false and order.Qty8InchPrints <= 5"
+      },
+      {
+        "RuleName": "check8xWallet25",
+        "SuccessEvent": "8xWallet",
+        "Expression": "REUtils.In(order.BrandId,\"66,63,259\")",
+        "Actions": {
+          "OnSuccess": {
+            "Name": "OutputExpression",
+            "Context": {
+              "Expression": "(order.Qty8InchPrints) / 25"
+            }
+          },
+          "OnFailure": {
+            "Name": "EvaluateRule",
+            "Context": {
+              "WorkflowName": "Inner:ADRS:4-8Prints:8x",
+              "ruleName": "check8xWallet50"
+            }
+          }
+        }
+      },
+      {
+        "RuleName": "check8xWallet50",
+        "SuccessEvent": "8xWallet",
+        "Expression": "REUtils.In(order.BrandId,\"66,63,259\") == false",
+        "Actions": {
+          "OnSuccess": {
+            "Name": "OutputExpression",
+            "Context": {
+              "Expression": "(order.Qty8InchPrints) / 50"
+            }
+          }
+        }
+      }
+    ]
+  },
+  {
+    "WorkflowName": "Outer:ADRS:4-8Prints:4x5x8x",
+    "Rules": [
+      {
+        "RuleName": "8xLessThan10",
+        "SuccessEvent": "ADRS Envelope 9x12",
+        "Expression": "(order.Qty8InchPrints>0 and order.Qty8InchPrints<=10) and (order.Qty4InchPrints+order.Qty5InchPrints)<65"
+      },
+      {
+        "RuleName": "8xLessThan20",
+        "SuccessEvent": "ADRS Envelope 9x12",
+        "Expression": "(order.Qty8InchPrints>10 and order.Qty8InchPrints<=20) and (order.Qty4InchPrints+order.Qty5InchPrints)<35"
+      }
+    ]
+  },
+  {
+    "WorkflowName": "Outer:ADRS:4-8Prints:4x5x",
+    "Rules": [
+      {
+        "RuleName": "8xLessThan10",
+        "SuccessEvent": "ADRS Envelope 9x12",
+        "Expression": "(order.Qty8InchPrints>0 and order.Qty8InchPrints<=10) and (order.Qty4InchPrints+order.Qty5InchPrints)<65"
+      },
+      {
+        "RuleName": "8xLessThan20",
+        "SuccessEvent": "ADRS Envelope 9x12",
+        "Expression": "(order.Qty8InchPrints>10 and order.Qty8InchPrints<=20) and (order.Qty4InchPrints+order.Qty5InchPrints)<35"
+      }
+    ]
+  },
+  {
+    "WorkflowName": "Outer:ADRS:4-8Prints:4x",
+    "Rules": [
+      {
+        "RuleName": "8xLessThan10",
+        "SuccessEvent": "ADRS Envelope 9x12",
+        "Expression": "(order.Qty8InchPrints>0 and order.Qty8InchPrints<=10) and (order.Qty4InchPrints+order.Qty5InchPrints)<65"
+      },
+      {
+        "RuleName": "8xLessThan20",
+        "SuccessEvent": "ADRS Envelope 9x12",
+        "Expression": "(order.Qty8InchPrints>10 and order.Qty8InchPrints<=20) and (order.Qty4InchPrints+order.Qty5InchPrints)<35"
+      }
+    ]
+  },
+  {
+    "WorkflowName": "Outer:ADRS:4-8Prints:5x",
+    "Rules": [
+      {
+        "RuleName": "8xLessThan10",
+        "SuccessEvent": "ADRS Envelope 9x12",
+        "Expression": "(order.Qty8InchPrints>0 and order.Qty8InchPrints<=10) and (order.Qty4InchPrints+order.Qty5InchPrints)<65"
+      },
+      {
+        "RuleName": "8xLessThan20",
+        "SuccessEvent": "ADRS Envelope 9x12",
+        "Expression": "(order.Qty8InchPrints>10 and order.Qty8InchPrints<=20) and (order.Qty4InchPrints+order.Qty5InchPrints)<35"
+      }
+    ]
+  },
+  {
+    "WorkflowName": "Outer:ADRS:4-8Prints:8x",
+    "Rules": [
+      {
+        "RuleName": "8xLessThan10",
+        "SuccessEvent": "ADRS Envelope 9x12",
+        "Expression": "(order.Qty8InchPrints>0 and order.Qty8InchPrints<=10) and (order.Qty4InchPrints+order.Qty5InchPrints)<65"
+      },
+      {
+        "RuleName": "8xLessThan20",
+        "SuccessEvent": "ADRS Envelope 9x12",
+        "Expression": "(order.Qty8InchPrints>10 and order.Qty8InchPrints<=20) and (order.Qty4InchPrints+order.Qty5InchPrints)<35"
       }
     ]
   }

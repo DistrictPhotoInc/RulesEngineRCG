@@ -15,6 +15,7 @@ namespace OrderPackagingWorkflow
     public readonly List<string> LocationNames = new List<string> { "BVL", "CHB", "LVL", "PHX", "UK" };
 
     public List<string> PrintGiftBoxCodes { get; set; }
+    public List<int> IgnoreSmallWalletBrands { get; set; }
     public static string ToJson(OrderPackagingHelper orderPackagingHelper)
     {
       string output = JsonConvert.SerializeObject(orderPackagingHelper);

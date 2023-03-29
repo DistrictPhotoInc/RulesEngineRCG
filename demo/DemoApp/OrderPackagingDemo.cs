@@ -16,194 +16,230 @@ using RE.HelperFunctions;
 
 namespace DemoApp
 {
-    public class OrderPackagingDemo
+  public class OrderPackagingDemo
+  {
+
+    private int GetRandomNumber()
+    {
+      Random rnd = new Random(DateTime.Now.Millisecond);
+      return rnd.Next(1, 101);  // >= 1 and < 101      
+    }
+    public void Run()
+    {
+      int randomNumber = 0;
+
+      #region load OrderPackagingInput.json as List<OrderPackagingInput> 
+      var files1 = Directory.GetFiles(Directory.GetCurrentDirectory(), "OrderPackagingInput.json", SearchOption.AllDirectories);
+      if (files1 == null || files1.Length == 0)
+        throw new Exception("OrderPackagingInput.json not found.");
+
+      var jsonFileData = File.ReadAllText(files1[0]);
+
+      List<OrderPackagingInput> inputList = JsonConvert.DeserializeObject<List<OrderPackagingInput>>(jsonFileData);
+
+      randomNumber = GetRandomNumber();
+
+      #endregion
+
+      #region load OrderPackagingHelper.json as input2
+      var files2 = Directory.GetFiles(Directory.GetCurrentDirectory(), "OrderPackagingHelper.json", SearchOption.AllDirectories);
+      if (files2 == null || files2.Length == 0)
+        throw new Exception("OrderPackagingHelper.json not found.");
+
+      var jsonFileData2 = File.ReadAllText(files2[0]);
+
+      OrderPackagingHelper input2 = JsonConvert.DeserializeObject<OrderPackagingHelper>(jsonFileData2);
+      #endregion
+
+      #region load OrderPackagingDynamic.json as input3
+      var files3 = Directory.GetFiles(Directory.GetCurrentDirectory(), "OrderPackagingDynamic.json", SearchOption.AllDirectories);
+      if (files3 == null || files3.Length == 0)
+        throw new Exception("OrderPackagingDynamic.json not found.");
+
+      JObject jObject = JObject.Parse(File.ReadAllText(files3[0]));
+
+      foreach (KeyValuePair<string, JToken> kvp in jObject)
+      {
+        Console.WriteLine(kvp.Key + " " + kvp.Value);
+      }
+
+      #endregion
+
+      Console.WriteLine($"Running {nameof(OrderPackagingDemo)}....");
+
+      #region Load Workflow file
+      var files = Directory.GetFiles(Directory.GetCurrentDirectory(),
+          "OrderPackagingWorkflows.json", SearchOption.AllDirectories);
+      if (files == null || files.Length == 0)
+        throw new Exception("Rules not found.");
+
+      var fileData = File.ReadAllText(files[0]);
+      var workflow = JsonConvert.DeserializeObject<List<Workflow>>(fileData);
+      #endregion
+
+      var reSettingsWithCustomTypes = new ReSettings { CustomTypes = new Type[] { typeof(REUtils) } };
+      var bre = new RulesEngine.RulesEngine(workflow.ToArray(), reSettingsWithCustomTypes);
+
+      foreach (OrderPackagingInput input1 in inputList)
+      {
+        List<RuleResultTree> resultList;
+        string location = "";
+        bool status;
+
+        PrintOrderPackagingInput(input1);
+
+        (status, location, resultList) = ProcessPackaging(true, input1, input2, jObject, bre);
+
+        PrintExceptions(resultList);
+        PrintRuleResultList(resultList, false);
+
+        (status, location, resultList) = ProcessPackaging(false, input1, input2, jObject, bre);
+        PrintExceptions(resultList);
+        PrintRuleResultList(resultList, false);
+      }
+    }
+
+    public record struct RuleExceptionMessage
+    {
+      public string RuleName { get; set; }
+      public string ExceptionMessage { get; set; }
+    }
+
+    private static void PrintOrderPackagingInput(OrderPackagingInput orderPackagingInput)
+    {
+      Console.WriteLine("==== OrderPackagingInput (start) ====");
+      Console.WriteLine(OrderPackagingInput.ToJson(orderPackagingInput));
+      Console.WriteLine("==== OrderPackagingInput (end)   ====");
+      Console.WriteLine(" ");
+    }
+    private static void PrintRuleResultList(List<RuleResultTree> resultList, bool includeFailedRules)
     {
 
-        private int GetRandomNumber()
+      double actionResultDouble = 0.0f;
+      int actionResultInt = 0;
+
+      Console.WriteLine("==== Rule Results (start) ====");
+      int ruleNumber = 1;
+      foreach (RuleResultTree rrt in resultList)
+      {
+        if (rrt.IsSuccess)
         {
-            Random rnd = new Random(DateTime.Now.Millisecond);
-            return rnd.Next(1, 101);  // >= 1 and < 101      
+          string message =
+          String.Format("IsSuccess: {0}", rrt.IsSuccess) + ", " +
+          String.Format("RuleNumber: {0}", ruleNumber) + ", " +
+          String.Format("RuleName: {0}", rrt.Rule.RuleName) + ", " +
+          String.Format("Expression: {0}", rrt.Rule.Expression) + ", " +
+          String.Format("SuccessEvent: {0}", rrt.Rule.SuccessEvent) + ", " +
+          String.Format("ActionOutput: {0}", rrt.ActionResult.Output);
+
+          if (
+            rrt.ActionResult.Output != null &&
+            Double.TryParse(rrt.ActionResult.Output.ToString(), out actionResultDouble))
+          {
+            actionResultInt = (int)Math.Ceiling(actionResultDouble);
+          }
+          else
+          {
+            actionResultInt = 1;
+          }
+          message = String.Format("{{ \"{0}\": {1}}}", rrt.Rule.SuccessEvent, actionResultInt) + " => " + message;
+          Console.WriteLine(message);
         }
-        public void Run()
+        ruleNumber++;
+      }
+      ruleNumber = 1;
+
+      if (includeFailedRules)
+      {
+        foreach (RuleResultTree rrt in resultList)
         {
-            int randomNumber = 0;
-
-            #region load OrderPackagingInput.json as List<OrderPackagingInput> 
-            var files1 = Directory.GetFiles(Directory.GetCurrentDirectory(), "OrderPackagingInput.json", SearchOption.AllDirectories);
-            if (files1 == null || files1.Length == 0)
-                throw new Exception("OrderPackagingInput.json not found.");
-
-            var jsonFileData = File.ReadAllText(files1[0]);
-
-            List<OrderPackagingInput> inputList = JsonConvert.DeserializeObject<List<OrderPackagingInput>>(jsonFileData);
-
-            randomNumber = GetRandomNumber();
-
-            #endregion
-
-            #region load OrderPackagingHelper.json as input2
-            var files2 = Directory.GetFiles(Directory.GetCurrentDirectory(), "OrderPackagingHelper.json", SearchOption.AllDirectories);
-            if (files2 == null || files2.Length == 0)
-                throw new Exception("OrderPackagingHelper.json not found.");
-
-            var jsonFileData2 = File.ReadAllText(files2[0]);
-
-            OrderPackagingHelper input2 = JsonConvert.DeserializeObject<OrderPackagingHelper>(jsonFileData2);
-            #endregion
-
-            #region load OrderPackagingDynamic.json as input3
-            var files3 = Directory.GetFiles(Directory.GetCurrentDirectory(), "OrderPackagingDynamic.json", SearchOption.AllDirectories);
-            if (files3 == null || files3.Length == 0)
-                throw new Exception("OrderPackagingDynamic.json not found.");
-
-            JObject jObject = JObject.Parse(File.ReadAllText(files3[0]));
-
-            foreach (KeyValuePair<string, JToken> kvp in jObject)
-            {
-                Console.WriteLine(kvp.Key + " " + kvp.Value);
-            }
-
-            #endregion
-
-            Console.WriteLine($"Running {nameof(OrderPackagingDemo)}....");
-
-            #region Load Workflow file
-            var files = Directory.GetFiles(Directory.GetCurrentDirectory(),
-                "OrderPackagingWorkflows.json", SearchOption.AllDirectories);
-            if (files == null || files.Length == 0)
-                throw new Exception("Rules not found.");
-
-            var fileData = File.ReadAllText(files[0]);
-            var workflow = JsonConvert.DeserializeObject<List<Workflow>>(fileData);
-            #endregion
-
-            var reSettingsWithCustomTypes = new ReSettings { CustomTypes = new Type[] { typeof(REUtils) } };
-            var bre = new RulesEngine.RulesEngine(workflow.ToArray(), reSettingsWithCustomTypes);
-
-            foreach (OrderPackagingInput input1 in inputList)
-            {
-                List<RuleResultTree> resultList;
-                string location = "";
-                bool status;
-
-
-                (status, location, resultList) = ProcessBRE(input1, input2, jObject, bre);
-
-                Console.WriteLine(location);
-                PrintExceptions(resultList);
-                PrintRuleResultList(resultList);
-            }
+          if (!rrt.IsSuccess)
+          {
+            string message =
+                String.Format("IsSuccess: {0}", rrt.IsSuccess) + ", " +
+                String.Format("RuleNumber: {0}", ruleNumber) + ", " +
+                String.Format("RuleName: {0}", rrt.Rule.RuleName) + ", " +
+                String.Format("Expression: {0}", rrt.Rule.Expression) + ", " +
+                String.Format("SuccessEvent: {0}", rrt.Rule.SuccessEvent);
+            Console.WriteLine(message);
+          }
+          ruleNumber++;
         }
-
-        public record struct RuleExceptionMessage
-        {
-            public string RuleName { get; set; }
-            public string ExceptionMessage { get; set; }
-        }
-
-        private static void PrintRuleResultList(List<RuleResultTree> resultList)
-        {
-            Console.WriteLine("====");
-            int ruleNumber = 1;
-            foreach (RuleResultTree rrt in resultList)
-            {
-                if (rrt.IsSuccess)
-                {
-                    string message =
-                    String.Format("IsSuccess: {0}", rrt.IsSuccess) + ", " +
-                    String.Format("RuleNumber: {0}", ruleNumber) + ", " +
-                    String.Format("RuleName: {0}", rrt.Rule.RuleName) + ", " +
-                    String.Format("Expression: {0}", rrt.Rule.Expression) + ", " +
-                    String.Format("SuccessEvent: {0}", rrt.Rule.SuccessEvent);
-                    Console.WriteLine(message);
-                    Console.WriteLine("");
-                }
-                ruleNumber++;
-            }
-            ruleNumber = 1;
-            foreach (RuleResultTree rrt in resultList)
-            {
-                if (!rrt.IsSuccess)
-                {
-                    string message =
-                    String.Format("IsSuccess: {0}", rrt.IsSuccess) + ", " +
-                  String.Format("RuleNumber: {0}", ruleNumber) + ", " +
-                  String.Format("RuleName: {0}", rrt.Rule.RuleName) + ", " +
-                  String.Format("Expression: {0}", rrt.Rule.Expression) + ", " +
-                  String.Format("SuccessEvent: {0}", rrt.Rule.SuccessEvent);
-                    Console.WriteLine(message);
-                    Console.WriteLine("");
-                }
-                ruleNumber++;
-            }
-            Console.WriteLine("====");
-        }
-        private static void PrintExceptions(List<RuleResultTree> resultList)
-        {
-            List<string> messages = GetExceptionMessages(resultList);
-
-            if (messages.Count > 0)
-            {
-                string json = JsonConvert.SerializeObject(messages);
-                Console.WriteLine(json);
-            }
-        }
-
-        private static List<string> GetExceptionMessages(List<RuleResultTree> resultList)
-        {
-            List<string> messages = new List<string>();
-            foreach (RuleResultTree rrt in resultList)
-            {
-                if (rrt.ExceptionMessage.Length > 0)
-                {
-                    string substring = rrt.ExceptionMessage.Substring(rrt.ExceptionMessage.IndexOf(":") + 1);
-                    if (messages.Contains(substring))
-                    {
-                        ;
-                    }
-                    else
-                    {
-                        messages.Add(substring);
-                    }
-                }
-            }
-            return messages;
-        }
-
-        private static (bool, string, List<RuleResultTree>) ProcessBRE(
-          OrderPackagingInput OrderPackagingInput
-        , OrderPackagingHelper OrderPackagingHelper
-        , JObject jObject
-        , RulesEngine.RulesEngine bre)
-        {
-            var converter = new ExpandoObjectConverter();
-
-            dynamic input3 = JsonConvert.DeserializeObject<ExpandoObject>(jObject.ToString(), converter);
-
-            List<RuleResultTree> resultList = new List<RuleResultTree>();
-            string location = "No packaging was found";
-
-            var rp1 = new RuleParameter("order", OrderPackagingInput);
-            var rp2 = new RuleParameter("packaging", OrderPackagingHelper);
-            var rp3 = new RuleParameter("dynamic", input3);
-
-            resultList = bre.ExecuteAllRulesAsync(OrderPackagingInput.PSGName, rp1, rp2, rp3).Result;
-
-            // If any exception messages, fail the entire rule
-
-            bool status = false;
-
-            resultList.OnSuccess((eventName) => {
-                location = $"{OrderPackagingInput.ShipToState} Order routed to {eventName}.  {OrderPackagingInput.RandomNumber}";
-                status = true;
-            });
-
-            resultList.OnFail(() => {
-                location = $"{OrderPackagingInput.ShipToState} Order was not routed";
-                status = false;
-            });
-
-            return (status, location, resultList);
-        }
+      }
+      Console.WriteLine("==== Rule Results (end)   ====");
+      Console.WriteLine(" ");
     }
+    private static void PrintExceptions(List<RuleResultTree> resultList)
+    {
+      List<string> messages = GetExceptionMessages(resultList);
+
+      if (messages.Count > 0)
+      {
+        Console.WriteLine("==== Rule Exceptions (start) ====");
+        string json = JsonConvert.SerializeObject(messages);
+        Console.WriteLine(json);
+        Console.WriteLine("==== Rule Exceptions (end) ====");
+        Console.WriteLine(" ");
+      }
+    }
+
+    private static List<string> GetExceptionMessages(List<RuleResultTree> resultList)
+    {
+      List<string> messages = new List<string>();
+      foreach (RuleResultTree rrt in resultList)
+      {
+        if (rrt.ExceptionMessage.Length > 0)
+        {
+          string substring = rrt.ExceptionMessage.Substring(rrt.ExceptionMessage.IndexOf(":") + 1);
+          if (messages.Contains(substring))
+          {
+            ;
+          }
+          else
+          {
+            messages.Add(substring);
+          }
+        }
+      }
+      return messages;
+    }
+
+    private static (bool, string, List<RuleResultTree>) ProcessPackaging(
+      bool innerPackaging
+    , OrderPackagingInput OrderPackagingInput
+    , OrderPackagingHelper OrderPackagingHelper
+    , JObject jObject
+    , RulesEngine.RulesEngine bre)
+    {
+      var converter = new ExpandoObjectConverter();
+
+      dynamic input3 = JsonConvert.DeserializeObject<ExpandoObject>(jObject.ToString(), converter);
+
+      List<RuleResultTree> resultList = new List<RuleResultTree>();
+      string location = "No packaging was found";
+
+      var rp1 = new RuleParameter("order", OrderPackagingInput);
+      var rp2 = new RuleParameter("packaging", OrderPackagingHelper);
+      var rp3 = new RuleParameter("dynamic", input3);
+
+      string workflowName = (innerPackaging ? "Inner:" : "Outer:") + OrderPackagingInput.PSGName;
+      resultList = bre.ExecuteAllRulesAsync(workflowName, rp1, rp2, rp3).Result;
+
+      // If any exception messages, fail the entire rule
+
+      bool status = false;
+
+      resultList.OnSuccess((eventName) => {
+        location = $"{OrderPackagingInput.ShipToState} Order routed to {eventName}.  {OrderPackagingInput.RandomNumber}";
+        status = true;
+      });
+
+      resultList.OnFail(() => {
+        location = $"{OrderPackagingInput.ShipToState} Order was not routed";
+        status = false;
+      });
+
+      return (status, location, resultList);
+    }
+  }
 }
